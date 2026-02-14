@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { ResourceEntity } from './resource.entity';
 import { isLikelyMp3 } from './mp3-validate';
 import { NormalizedMp3Metadata, normalizeFromTika, TikaMetadata } from './tika-helper';
+import { SongServerClient } from './song-server.client';
 
 export class InvalidMp3Error extends Error {
   constructor() {
@@ -13,6 +14,9 @@ export class InvalidMp3Error extends Error {
 
 @Injectable()
 export class ResourcesService {
+
+  private readonly songServer = new SongServerClient();
+  
   constructor(
     @InjectRepository(ResourceEntity)
     private readonly repo: Repository<ResourceEntity>,
@@ -43,6 +47,7 @@ export class ResourcesService {
     };
     console.log("mp3Info", mp3InfoWithId);
 
+    await this.songServer.createSong(mp3InfoWithId);
 
     return saved;
   }
@@ -65,6 +70,7 @@ export class ResourcesService {
   }
 
   async deleteById(id: string): Promise<boolean> {
+    this.songServer.deleteById(id);
     const result = await this.repo.delete({ id });
     return (result.affected ?? 0) > 0;
   }
