@@ -34,6 +34,15 @@ export class SongController {
     }
   }
 
+    @Get()
+  async list() {
+    try {
+      return await this.songsService.list();
+    } catch {
+      throw new InternalServerErrorException();
+    }
+  }
+
   @Get(':id')
   async getById(@Param('id') id: string) {
     try {

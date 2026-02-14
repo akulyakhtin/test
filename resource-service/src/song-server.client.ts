@@ -21,7 +21,7 @@ export class SongServerClient {
   }
 
   async deleteById(resourceId: string): Promise<void> {
-    const url = `${this.baseUrl}/songs?resourceId=${encodeURIComponent(resourceId)}`;
+    const url = `${this.baseUrl}/songs?id=${encodeURIComponent(resourceId)}`;
 
     const res = await fetch(url, {
       method: 'DELETE',

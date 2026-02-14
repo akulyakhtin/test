@@ -12,6 +12,7 @@ import {
   Res,
   Header,
   StreamableFile,
+  Query,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 
@@ -68,8 +69,9 @@ export class ResourcesController {
     });
   }
 
-  @Delete(':id')
-  async delete(@Param('id') id: string) {
+  @Delete()
+  async delete(@Query('id') id: string) {
+    console.error(`deleting song id=${id}`);
     try {
       const deleted = await this.resourcesService.deleteById(id);
       if (!deleted) throw new NotFoundException();

@@ -1,5 +1,5 @@
 export class CreateSongDto {
-  id: string;
+  id!: string;
   name?: string;
   artist?: string;
   album?: string;

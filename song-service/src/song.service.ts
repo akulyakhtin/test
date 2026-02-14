@@ -15,9 +15,16 @@ export class SongService {
   constructor(
     @InjectRepository(SongEntity)
     private readonly repo: Repository<SongEntity>,
-  ) {}
+  ) { }
 
   async create(dto: CreateSongDto): Promise<SongEntity> {
+
+    console.log("creating song", dto);
+
+    if (!dto.id || !dto.id.trim()) {
+      throw new InvalidSongPayloadError('id is required');
+    }
+
     const hasAny =
       !!dto.name?.trim() ||
       !!dto.artist?.trim() ||
@@ -38,6 +45,7 @@ export class SongService {
     }
 
     const entity = this.repo.create({
+      id: dto.id.trim(),
       name: dto.name?.trim() ?? null,
       artist: dto.artist?.trim() ?? null,
       album: dto.album?.trim() ?? null,
@@ -48,12 +56,18 @@ export class SongService {
     return this.repo.save(entity);
   }
 
+  async list(): Promise<Array<SongEntity>> {
+    return this.repo.find({
+      order: { createdAt: 'DESC' },
+    });
+  }
+
   async findById(id: string): Promise<SongEntity | null> {
     return this.repo.findOne({ where: { id } });
   }
 
   async deleteByIds(ids: string[]): Promise<{ ids: string[] }> {
-    if (ids.length === 0) return {ids: [] };
+    if (ids.length === 0) return { ids: [] };
 
     // Fetch existing ids first so we can report exactly what was deleted
     const existing = await this.repo.find({
