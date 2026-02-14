@@ -11,8 +11,6 @@ export class InvalidMp3Error extends Error {
   }
 }
 
-
-
 @Injectable()
 export class ResourcesService {
   constructor(
@@ -53,6 +51,10 @@ export class ResourcesService {
       },
       order: { createdAt: 'DESC' },
     });
+  }
+
+  async findById(id: string): Promise<ResourceEntity | null> {
+    return this.repo.findOne({ where: { id } });
   }
 
   async deleteById(id: string): Promise<boolean> {

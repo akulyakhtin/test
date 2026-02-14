@@ -9,6 +9,9 @@ import {
   BadRequestException,
   InternalServerErrorException,
   NotFoundException,
+  Res,
+  Header,
+  StreamableFile,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 
@@ -48,6 +51,21 @@ export class ResourcesController {
     } catch {
       throw new InternalServerErrorException();
     }
+  }
+
+  @Get(':id')
+  @Header('Content-Type', 'audio/mpeg')
+  async getById(@Param('id') id: string): Promise<StreamableFile> {
+    const resource = await this.resourcesService.findById(id);
+
+    if (!resource) {
+      throw new NotFoundException();
+    }
+
+    return new StreamableFile(resource.data, {
+      disposition: `inline; filename="${resource.filename}"`,
+      length: resource.size,
+    });
   }
 
   @Delete(':id')
