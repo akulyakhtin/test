@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ResourceEntity } from './resource.entity';
 import { isLikelyMp3 } from './mp3-validate';
-import { normalizeFromTika, TikaMetadata } from './tika-helper';
+import { NormalizedMp3Metadata, normalizeFromTika, TikaMetadata } from './tika-helper';
 
 export class InvalidMp3Error extends Error {
   constructor() {
@@ -26,10 +26,6 @@ export class ResourcesService {
       throw new InvalidMp3Error();
     }
 
-    const metadata: TikaMetadata = await this.extractMp3MetadataWithTika(file.buffer);
-    const mp3Info = normalizeFromTika(metadata);
-    console.log("mp3Info", mp3Info);
-
     const entity = this.repo.create({
       data: file.buffer,
       filename: file.originalname ?? 'upload.mp3',
@@ -37,7 +33,18 @@ export class ResourcesService {
       size: typeof file.size === 'number' ? file.size : file.buffer.length,
     });
 
-    return this.repo.save(entity);
+    const saved = await this.repo.save(entity);
+
+    const metadata: TikaMetadata = await this.extractMp3MetadataWithTika(file.buffer);
+    const mp3Info = normalizeFromTika(metadata);
+    const mp3InfoWithId = {
+      id: saved.id,
+      ...mp3Info,
+    };
+    console.log("mp3Info", mp3InfoWithId);
+
+
+    return saved;
   }
 
   async list(): Promise<Array<Pick<ResourceEntity, 'id' | 'filename' | 'mimeType' | 'size' | 'createdAt'>>> {
