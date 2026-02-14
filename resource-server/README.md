@@ -16,7 +16,17 @@ npm run start:dev
 ```
 
 Upload mp3
+```
 curl -X POST http://localhost:3000/resources -F "file=@test.mp3"
+```
+
+List mp3s
+```
+curl http://localhost:3000/resources
+```
+
+Delete mp3
+
 
 
 
