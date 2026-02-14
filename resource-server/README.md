@@ -10,6 +10,11 @@ Start Postgres:
 docker run -d --name pg -e POSTGRES_PASSWORD=postgres -p 5432:5432 postgres:16
 ```
 
+Start tika
+```
+docker run -d --name tika-server -p 9998:9998 apache/tika:latest
+```
+
 Start app
 ```
 npm run start:dev
