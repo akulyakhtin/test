@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ResourceEntity } from './resource.entity';
 import { isLikelyMp3 } from './mp3-validate';
+import { normalizeFromTika, TikaMetadata } from './tika-helper';
 
 export class InvalidMp3Error extends Error {
   constructor() {
@@ -10,7 +11,7 @@ export class InvalidMp3Error extends Error {
   }
 }
 
-type TikaMetadata = Record<string, any>;
+
 
 @Injectable()
 export class ResourcesService {
@@ -28,7 +29,8 @@ export class ResourcesService {
     }
 
     const metadata: TikaMetadata = await this.extractMp3MetadataWithTika(file.buffer);
-    console.log("metadata", metadata)
+    const mp3Info = normalizeFromTika(metadata);
+    console.log("mp3Info", mp3Info);
 
     const entity = this.repo.create({
       data: file.buffer,
