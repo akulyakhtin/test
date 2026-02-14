@@ -1,11 +1,13 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-import { ResourcesModule } from './resources/resources.module';
-import { ResourceEntity } from './resources/resource.entity';
+import { ResourcesController } from './resources.controller';
+import { ResourcesService } from './resources.service';
+import { ResourceEntity } from './resource.entity'
 
 @Module({
   imports: [
+    // TypeORM root config
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: 'localhost',
@@ -14,10 +16,17 @@ import { ResourceEntity } from './resources/resource.entity';
       password: 'postgres',
       database: 'postgres',
       entities: [ResourceEntity],
-      synchronize: true, 
+      synchronize: true, // dev only
     }),
 
-    ResourcesModule,
+    // Register repository for ResourceEntity
+    TypeOrmModule.forFeature([ResourceEntity]),
+  ],
+  controllers: [
+    ResourcesController,
+  ],
+  providers: [
+    ResourcesService,
   ],
 })
 export class AppModule {}
