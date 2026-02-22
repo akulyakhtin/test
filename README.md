@@ -19,27 +19,12 @@ This project consists of two services:
 
 ---
 
-## Run with Docker
+## Run with Docker Compose
 
-### Build the images
-
-```bash
-docker build -t resource-service ./resource-service
-docker build -t song-service ./song-service
-```
-
-### Create network and start containers
+Build images and start all containers with a single command:
 
 ```bash
-docker network create traks-net
-
-docker run --rm -d --name pg --network traks-net -e POSTGRES_PASSWORD=postgres postgres:16
-
-docker run --rm -d --name tika-server --network traks-net apache/tika:latest
-
-docker run --rm -d --name song-service --network traks-net -p 3001:3001 -e DB_HOST=pg song-service
-
-docker run --rm -d --name resource-service --network traks-net -p 3000:3000 -e DB_HOST=pg -e TIKA_URL=http://tika-server:9998 -e SONG_SERVER_URL=http://song-service:3001 resource-service
+docker compose up -d --build
 ```
 
 | Service          | URL                   |
@@ -47,35 +32,51 @@ docker run --rm -d --name resource-service --network traks-net -p 3000:3000 -e D
 | resource-service | http://localhost:3000 |
 | song-service     | http://localhost:3001 |
 
----
-
-## If you want to build and start services Locally
-
-### Resource Service
+To stop everything:
 
 ```bash
+docker compose down
+```
+
+---
+
+## Build Images Manually (if you want to)
+
+```bash
+docker build -t resource-service ./resource-service
+docker build -t song-service ./song-service
+```
+
+---
+
+## Run Locally (if you want to)
+
+Start only the database and Tika containers, then run the services on the host:
+
+```bash
+docker compose up -d resource-db song-db tika-server
+```
+
+Then in separate terminals:
+
+```bash
+# resource-service
 cd resource-service
 npm install
 npm run start
-```
 
-Runs on:
-
-http://localhost:3000
-
----
-
-### Song Service
-
-```bash
+# song-service
 cd song-service
 npm install
 npm run start
 ```
 
-Runs on:
+Services use their built-in defaults to connect to the database containers:
 
-http://localhost:3001
+| Service          | Default DB connection          |
+|------------------|-------------------------------|
+| resource-service | `localhost:5432/resource_db`  |
+| song-service     | `localhost:5433/song_db`      |
 
 ---
 
@@ -156,7 +157,7 @@ Response:
 ### Delete the MP3 (resource service)
 
 ```bash
-curl -X DELETE http://localhost:3000/resources/<id>
+curl -X DELETE "http://localhost:3000/resources?id=<id>"
 ```
 
 This will:

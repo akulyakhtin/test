@@ -14,59 +14,59 @@ and extracts normalized metadata.
 
 ---
 
-## Run with Docker
+## Run with Docker Compose
 
-### Build the image
-
-```bash
-docker build -t song-service .
-```
-
-### Run the container
-
-Shared infrastructure (`pg`, `traks-net` network) must already be running.
-To start everything together, follow the [main README](../README.md).
-
-Once the shared infrastructure is up, run just this service:
+From the project root, build and start everything:
 
 ```bash
-docker run -d \
-  --name song-service \
-  --network traks-net \
-  -p 3001:3001 \
-  -e DB_HOST=pg \
-  song-service
+docker compose up -d --build
 ```
 
 The service will be available at http://localhost:3001.
 
-All environment variables and their defaults:
+To rebuild only this service after code changes:
+
+```bash
+docker compose up -d --build song-service
+```
+
+All environment variables and their defaults (used when running locally without Docker):
 
 | Variable      | Default     | Description                  |
 |---------------|-------------|------------------------------|
 | `PORT`        | `3001`      | Port the service listens on  |
 | `DB_HOST`     | `localhost` | PostgreSQL host              |
-| `DB_PORT`     | `5432`      | PostgreSQL port              |
+| `DB_PORT`     | `5433`      | PostgreSQL port (host-exposed port of `song-db`) |
 | `DB_USERNAME` | `postgres`  | PostgreSQL username          |
 | `DB_PASSWORD` | `postgres`  | PostgreSQL password          |
-| `DB_NAME`     | `postgres`  | PostgreSQL database name     |
+| `DB_NAME`     | `song_db`   | PostgreSQL database name     |
 
 ---
 
-## Build and Run Locally
+## Build the Image Manually (if you want to)
 
-Install dependencies and start the application:
+```bash
+docker build -t song-service .
+```
+
+---
+
+## Run Locally (if you want to)
+
+Start the database container first (from the project root):
+
+```bash
+docker compose up -d song-db
+```
+
+Then install dependencies and start the service:
 
 ```bash
 npm install
 npm run start
 ```
 
-By default, the service will start on:
-
-```
-http://localhost:3001
-```
+The service will start on http://localhost:3001 and connect to `localhost:5433/song_db`.
 
 ---
 

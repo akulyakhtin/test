@@ -12,35 +12,23 @@ stored separately for downstream processing.
 -   Docker
 -   npm
 
-## Run with Docker
+## Run with Docker Compose
 
-### Build the image
-
-```bash
-docker build -t resource-service .
-```
-
-### Run the container
-
-Shared infrastructure (`pg`, `tika-server`, `traks-net` network) must already be running.
-To start everything together, follow the [main README](../README.md).
-
-Once the shared infrastructure is up, run just this service:
+From the project root, build and start everything:
 
 ```bash
-docker run -d \
-  --name resource-service \
-  --network traks-net \
-  -p 3000:3000 \
-  -e DB_HOST=pg \
-  -e TIKA_URL=http://tika-server:9998 \
-  -e SONG_SERVER_URL=http://song-service:3001 \
-  resource-service
+docker compose up -d --build
 ```
 
 The service will be available at http://localhost:3000.
 
-All environment variables and their defaults:
+To rebuild only this service after code changes:
+
+```bash
+docker compose up -d --build resource-service
+```
+
+All environment variables and their defaults (used when running locally without Docker):
 
 | Variable         | Default                 | Description                  |
 |------------------|-------------------------|------------------------------|
@@ -49,27 +37,36 @@ All environment variables and their defaults:
 | `DB_PORT`        | `5432`                  | PostgreSQL port              |
 | `DB_USERNAME`    | `postgres`              | PostgreSQL username          |
 | `DB_PASSWORD`    | `postgres`              | PostgreSQL password          |
-| `DB_NAME`        | `postgres`              | PostgreSQL database name     |
+| `DB_NAME`        | `resource_db`           | PostgreSQL database name     |
 | `TIKA_URL`       | `http://localhost:9998` | Apache Tika base URL         |
 | `SONG_SERVER_URL`| `http://localhost:3001` | Song service base URL        |
 
 ------------------------------------------------------------------------
 
-## Build and run locally
+## Build the Image Manually (if you want to)
 
-Install dependencies:
-
-``` bash
-npm install
+```bash
+docker build -t resource-service .
 ```
 
-``` bash
+------------------------------------------------------------------------
+
+## Run Locally (if you want to)
+
+Start the database and Tika containers first (from the project root):
+
+```bash
+docker compose up -d resource-db tika-server
+```
+
+Then install dependencies and start the service:
+
+```bash
+npm install
 npm run start:dev
 ```
 
-The server will start on:
-
-http://localhost:3000
+The server will start on http://localhost:3000 and connect to `localhost:5432/resource_db`.
 
 ------------------------------------------------------------------------
 
@@ -105,7 +102,7 @@ curl http://localhost:3000/resources/<ID> -o downloaded.mp3
 ### Delete an MP3 file
 
 ``` bash
-curl -X DELETE http://localhost:3000/resources/<ID>
+curl -X DELETE "http://localhost:3000/resources?id=<ID>"
 ```
 
 
