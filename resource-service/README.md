@@ -12,41 +12,56 @@ stored separately for downstream processing.
 -   Docker
 -   npm
 
+## Run with Docker
+
+### Build the image
+
+```bash
+docker build -t resource-service .
+```
+
+### Run the container
+
+Shared infrastructure (`pg`, `tika-server`, `traks-net` network) must already be running.
+To start everything together, follow the [main README](../README.md).
+
+Once the shared infrastructure is up, run just this service:
+
+```bash
+docker run -d \
+  --name resource-service \
+  --network traks-net \
+  -p 3000:3000 \
+  -e DB_HOST=pg \
+  -e TIKA_URL=http://tika-server:9998 \
+  -e SONG_SERVER_URL=http://song-service:3001 \
+  resource-service
+```
+
+The service will be available at http://localhost:3000.
+
+All environment variables and their defaults:
+
+| Variable         | Default                 | Description                  |
+|------------------|-------------------------|------------------------------|
+| `PORT`           | `3000`                  | Port the service listens on  |
+| `DB_HOST`        | `localhost`             | PostgreSQL host              |
+| `DB_PORT`        | `5432`                  | PostgreSQL port              |
+| `DB_USERNAME`    | `postgres`              | PostgreSQL username          |
+| `DB_PASSWORD`    | `postgres`              | PostgreSQL password          |
+| `DB_NAME`        | `postgres`              | PostgreSQL database name     |
+| `TIKA_URL`       | `http://localhost:9998` | Apache Tika base URL         |
+| `SONG_SERVER_URL`| `http://localhost:3001` | Song service base URL        |
+
 ------------------------------------------------------------------------
 
-## Build
+## Build and run locally
 
 Install dependencies:
 
 ``` bash
 npm install
 ```
-
-------------------------------------------------------------------------
-
-## Run
-
-### Start PostgreSQL
-
-``` bash
-docker run -d   --name pg   -e POSTGRES_PASSWORD=postgres   -p 5432:5432   postgres:16
-```
-
-------------------------------------------------------------------------
-
-### Start Apache Tika
-
-``` bash
-docker run -d   --name tika-server   -p 9998:9998   apache/tika:latest
-```
-
-Apache Tika will be available at:
-
-http://localhost:9998
-
-------------------------------------------------------------------------
-
-### Start the application
 
 ``` bash
 npm run start:dev

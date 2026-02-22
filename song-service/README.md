@@ -14,17 +14,46 @@ and extracts normalized metadata.
 
 ---
 
-## Start PostgreSQL
+## Run with Docker
 
-Run PostgreSQL in Docker:
+### Build the image
 
 ```bash
-docker run -d   --name pg   -e POSTGRES_PASSWORD=postgres   -p 5432:5432   postgres:16
+docker build -t song-service .
 ```
+
+### Run the container
+
+Shared infrastructure (`pg`, `traks-net` network) must already be running.
+To start everything together, follow the [main README](../README.md).
+
+Once the shared infrastructure is up, run just this service:
+
+```bash
+docker run -d \
+  --name song-service \
+  --network traks-net \
+  -p 3001:3001 \
+  -e DB_HOST=pg \
+  song-service
+```
+
+The service will be available at http://localhost:3001.
+
+All environment variables and their defaults:
+
+| Variable      | Default     | Description                  |
+|---------------|-------------|------------------------------|
+| `PORT`        | `3001`      | Port the service listens on  |
+| `DB_HOST`     | `localhost` | PostgreSQL host              |
+| `DB_PORT`     | `5432`      | PostgreSQL port              |
+| `DB_USERNAME` | `postgres`  | PostgreSQL username          |
+| `DB_PASSWORD` | `postgres`  | PostgreSQL password          |
+| `DB_NAME`     | `postgres`  | PostgreSQL database name     |
 
 ---
 
-## Build and Run the Service
+## Build and Run Locally
 
 Install dependencies and start the application:
 

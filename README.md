@@ -19,25 +19,37 @@ This project consists of two services:
 
 ---
 
-## Start Infrastructure
+## Run with Docker
 
-### Start PostgreSQL
+### Build the images
 
 ```bash
-docker run -d   --name pg   -e POSTGRES_PASSWORD=postgres   -p 5432:5432   postgres:16
+docker build -t resource-service ./resource-service
+docker build -t song-service ./song-service
 ```
+
+### Create network and start containers
+
+```bash
+docker network create traks-net
+
+docker run --rm -d --name pg --network traks-net -e POSTGRES_PASSWORD=postgres postgres:16
+
+docker run --rm -d --name tika-server --network traks-net apache/tika:latest
+
+docker run --rm -d --name song-service --network traks-net -p 3001:3001 -e DB_HOST=pg song-service
+
+docker run --rm -d --name resource-service --network traks-net -p 3000:3000 -e DB_HOST=pg -e TIKA_URL=http://tika-server:9998 -e SONG_SERVER_URL=http://song-service:3001 resource-service
+```
+
+| Service          | URL                   |
+|------------------|-----------------------|
+| resource-service | http://localhost:3000 |
+| song-service     | http://localhost:3001 |
 
 ---
 
-### Start Apache Tika
-
-```bash
-docker run -d   --name tika-server   -p 9998:9998   apache/tika:latest
-```
-
----
-
-## Build and Start Services
+## If you want to build and start services Locally
 
 ### Resource Service
 
