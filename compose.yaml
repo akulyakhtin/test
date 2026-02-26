@@ -37,18 +37,32 @@ services:
     ports:
       - "9998:9998"
 
+  eureka-server:
+    build: ./eureka
+    ports:
+      - "8761:8761"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8761/eureka/apps || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
   song-service:
     build: ./song-service
-    ports:
-      - "3001:3001"
     environment:
       DB_HOST: ${SONG_DB_HOST}
       DB_PORT: ${SONG_DB_PORT}
       DB_NAME: ${SONG_DB_NAME}
       DB_USERNAME: ${SONG_DB_USER}
       DB_PASSWORD: ${SONG_DB_PASSWORD}
+      EUREKA_HOST: ${EUREKA_HOST}
+      EUREKA_PORT: ${EUREKA_PORT}
+      EUREKA_INSTANCE_HOST: song-service
     depends_on:
       song-db:
+        condition: service_healthy
+      eureka-server:
         condition: service_healthy
 
   resource-service:
@@ -63,6 +77,9 @@ services:
       DB_PASSWORD: ${RESOURCE_DB_PASSWORD}
       TIKA_URL: ${TIKA_URL}
       SONG_SERVER_URL: ${SONG_SERVER_URL}
+      EUREKA_HOST: ${EUREKA_HOST}
+      EUREKA_PORT: ${EUREKA_PORT}
+      EUREKA_INSTANCE_HOST: resource-service
     depends_on:
       resource-db:
         condition: service_healthy
@@ -70,3 +87,5 @@ services:
         condition: service_started
       tika-server:
         condition: service_started
+      eureka-server:
+        condition: service_healthy

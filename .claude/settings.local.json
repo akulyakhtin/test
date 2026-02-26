@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "additionalDirectories": [
+      "C:\\training\\eureka\\src\\main\\java\\com\\example"
+    ],
+    "allow": [
+      "Bash(npm install eureka-js-client)"
+    ]
+  }
+}

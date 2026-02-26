@@ -1,16 +1,8 @@
 # Song Service
 
-This service is responsible for storing and serving song metadata.
-It is designed to work together with the resource service, which uploads MP3 files
-and extracts normalized metadata.
-
----
-
-## Prerequisites
-
-- Docker
-- Node.js 18 or newer
-- npm
+A NestJS service for storing and serving MP3 song metadata.
+Works together with resource-service, which uploads MP3 files and forwards extracted metadata here.
+Registers with Eureka on startup so resource-service can discover it.
 
 ---
 
@@ -22,7 +14,7 @@ From the project root, build and start everything:
 docker compose up -d --build
 ```
 
-The service will be available at http://localhost:3001.
+> song-service has no fixed host port in Docker Compose — it is accessed internally by resource-service via Eureka discovery.
 
 To rebuild only this service after code changes:
 
@@ -30,16 +22,28 @@ To rebuild only this service after code changes:
 docker compose up -d --build song-service
 ```
 
-All environment variables and their defaults (used when running locally without Docker):
+### Scale to multiple instances
 
-| Variable      | Default     | Description                  |
-|---------------|-------------|------------------------------|
-| `PORT`        | `3001`      | Port the service listens on  |
-| `DB_HOST`     | `localhost` | PostgreSQL host              |
-| `DB_PORT`     | `5433`      | PostgreSQL port (host-exposed port of `song-db`) |
-| `DB_USERNAME` | `postgres`  | PostgreSQL username          |
-| `DB_PASSWORD` | `postgres`  | PostgreSQL password          |
-| `DB_NAME`     | `song_db`   | PostgreSQL database name     |
+```bash
+docker compose up --scale song-service=2 --build -d
+```
+
+Each instance registers in Eureka with a unique identity derived from its container hostname.
+
+---
+
+## Environment Variables
+
+| Variable              | Default     | Description                                       |
+|-----------------------|-------------|---------------------------------------------------|
+| `PORT`                | `3001`      | Port the service listens on                       |
+| `DB_HOST`             | `localhost` | PostgreSQL host                                   |
+| `DB_PORT`             | `5433`      | PostgreSQL port (host-exposed port of `song-db`)  |
+| `DB_USERNAME`         | `postgres`  | PostgreSQL username                               |
+| `DB_PASSWORD`         | `postgres`  | PostgreSQL password                               |
+| `DB_NAME`             | `song_db`   | PostgreSQL database name                          |
+| `EUREKA_HOST`         | `localhost` | Eureka server host                                |
+| `EUREKA_PORT`         | `8761`      | Eureka server port                                |
 
 ---
 
@@ -53,10 +57,10 @@ docker build -t song-service .
 
 ## Run Locally (if you want to)
 
-Start the database container first (from the project root):
+Start the database and Eureka containers first (from the project root):
 
 ```bash
-docker compose up -d song-db
+docker compose up -d song-db eureka-server
 ```
 
 Then install dependencies and start the service:
@@ -66,27 +70,21 @@ npm install
 npm run start
 ```
 
-The service will start on http://localhost:3001 and connect to `localhost:5433/song_db`.
+The service will start on http://localhost:3001 and register with Eureka at `localhost:8761`.
 
 ---
 
 ## Usage
 
-### Upload a song via the resource service
-
-First, upload an MP3 file using the resource service.
-This will automatically create a corresponding song metadata record
-in this service.
-
----
+Song records are created automatically when an MP3 is uploaded via resource-service.
 
 ### Retrieve song metadata
 
-Fetch metadata for a song by its identifier:
-
 ```bash
-curl http://localhost:3001/songs?id=<id>
+curl http://localhost:3001/songs/<id>
 ```
+
+> Only available when running locally (no host port mapping in Docker Compose).
 
 Example response:
 
@@ -101,4 +99,3 @@ Example response:
   "createdAt": "2026-02-14T15:52:12.911Z"
 }
 ```
-
