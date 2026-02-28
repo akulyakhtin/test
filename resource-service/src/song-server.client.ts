@@ -14,7 +14,7 @@ export class SongServerClient {
       try {
         const instances = client.getInstancesByAppId('SONG-SERVICE');
         if (instances?.length > 0) {
-          const inst = instances[0];
+          const inst = instances[Math.floor(Math.random() * instances.length)];
           const host = inst.hostName;
           const port = (inst.port as { '$': number })['$'];
           return `http://${host}:${port}`;

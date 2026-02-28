@@ -50,6 +50,10 @@ services:
 
   song-service:
     build: ./song-service
+    deploy:
+      replicas: 2
+    ports:
+      - 3001-3002:3001
     environment:
       DB_HOST: ${SONG_DB_HOST}
       DB_PORT: ${SONG_DB_PORT}
